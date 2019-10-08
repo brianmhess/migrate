@@ -1,14 +1,14 @@
-##Commands
+## Commands
 
 
-###Build
+### Build
 
 Build your container with:
 ```
 gcloud builds submit --tag gcr.io/PROJECT-ID/migrate
 ```
 
-###Deploy
+### Deploy
 
 Deploy using
 ``` 
@@ -18,7 +18,7 @@ gcloud beta run deploy --image gcr.io/PROJECT-ID/migrate --platform managed
 - You will be prompted for region: select the region of your choice, for example `us-central1`.
 - You will be prompted to allow unauthenticated invocations: respond `y` .
 
-###Removing
+### Removing
 
 - In the GCP Console, go to the Manage resources page.
 - In the project list, select the project you want to delete and click Delete delete.
