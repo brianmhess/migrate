@@ -1,7 +1,10 @@
 package hessian.migrate;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.multipart.MultipartFile;
 
+@PropertySource("application.properties")
 public class MigrateOptions {
     private  MultipartFile srcBundle = null;
     private  String srcHostname = null;
@@ -30,6 +33,8 @@ public class MigrateOptions {
     private String pagingState = null;
     private Integer pageSize = null;
     private Integer numPages = null;
+
+    private Long timeout = 900000L;
 
     public MigrateOptions() {
     }
@@ -309,5 +314,13 @@ public class MigrateOptions {
 
     public void setNumPages(Integer numPages) {
         this.numPages = numPages;
+    }
+
+    public Long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Long timeout) {
+        this.timeout = timeout;
     }
 }

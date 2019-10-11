@@ -25,7 +25,11 @@ import java.util.Optional;
 
 @RestController
 public class MigrateController {
-    private int some = 5;
+    @RequestMapping("/")
+    @ResponseBody
+    public String rootIndex() {
+        return index();
+    }
 
     @RequestMapping("/migrate")
     @ResponseBody
@@ -227,10 +231,6 @@ public class MigrateController {
                 pagingState, pageSize, numPages);
         DseSession srcSession = options.srcDseSessionOptions().builder().build();
         DseSession dstSession = options.dstDseSessionOptions().builder().build();
-        if (null != options.getNumPages())
-            some = options.getNumPages();
-        else
-            options.setNumPages(some);
         ByteBuffer pagingStateBytes = null;
         if ((null != options.getPagingState()) && (!options.getPagingState().isEmpty()))
             pagingStateBytes = ByteBuffer.wrap(Base64.getDecoder().decode(options.getPagingState()));
@@ -252,7 +252,7 @@ public class MigrateController {
         }
         PreparedStatement dstPs = dstSession.prepare(insert.build());
 
-        ByteBuffer newPagingState = executeSome(srcSession, srcPs, dstSession, dstPs, options.getPageSize(), some, pagingStateBytes);
+        ByteBuffer newPagingState = executeSome(srcSession, srcPs, dstSession, dstPs, pagingStateBytes, options);
         if (null != newPagingState) {
             options.setPagingState(Base64.getEncoder().encodeToString(newPagingState.array()));
             return webPage(options);
@@ -260,43 +260,21 @@ public class MigrateController {
         return "Done!";
     }
 
-    private void submitForNext(DseSessionOptions srcDseSessionOptions, DseSessionOptions dstDseSessionOptions,
-                               int pageSize, int numPages, ByteBuffer newPagingState) {
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<String,Object>();
-        body.addAll(srcDseSessionOptions.asMap("src"));
-        body.addAll(dstDseSessionOptions.asMap("dst"));
-        body.add("pageSize", pageSize);
-        body.add("numPages", numPages);
-        body.add("pagingState", Base64.getEncoder().encodeToString(newPagingState.array()));
-
-        RedirectView redirect = new RedirectView("/model");
-        redirect.setContextRelative(true);
-        redirect.setPropagateQueryParams(true);
-        redirect.addStaticAttribute("pagingState", Base64.getEncoder().encodeToString(newPagingState.array()));
-        //return redirect;
-        /*
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
-
-        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
-        String serverUrl = "migrate/";
-        WebClient webClient = WebClient.create();
-        WebClient.RequestHeadersSpec requestSpec = webClient.post().uri(serverUrl).body(BodyInserters.fromMultipartData(body));
-        requestSpec.retrieve().bodyToMono(String.class).block();
-        System.err.println("Hiya");
-        */
-    }
-
     private ByteBuffer executeSome(DseSession srcSession, PreparedStatement srcPs,
                                    DseSession dstSession, PreparedStatement dstPs,
-                                   Integer pageSize, int some, ByteBuffer pagingState) {
+                                   ByteBuffer pagingState, MigrateOptions options) {
         BoundStatement srcBs = srcPs.bind();
-        if (null != pageSize)
-            srcBs = srcBs.setPageSize(pageSize);
+        if (null != options.getPageSize())
+            srcBs = srcBs.setPageSize(options.getPageSize());
         if (null != pagingState)
             srcBs = srcBs.setPagingState(pagingState);
         ResultSet rs = srcSession.execute(srcBs);
         Flux<ReactiveRow> flux = null;
+        long alltimeStart = System.currentTimeMillis();
+        long thispageStart = alltimeStart;
+        long bufferTime = 10*1000;
+        Long timeout = options.getTimeout();
+        Integer numPages = options.getNumPages();
         for (Row r : rs) {
             BoundStatement dstBs = dstPs.bind();
             for (ColumnDefinition cdef : r.getColumnDefinitions())
@@ -310,15 +288,30 @@ public class MigrateController {
                 flux = flux.concatWith(rrs);
 
             if (0 == rs.getAvailableWithoutFetching()) {
-                some--;
-                if (0 >= some) {
-                    // All done with this request
-                    if (null != flux)
-                        flux.blockLast();
-                    if (rs.isFullyFetched())
-                        return null;
-                    else
-                        return rs.getExecutionInfo().getPagingState();
+                if (null != numPages) {
+                    numPages--;
+                    if (0 >= numPages) {
+                        // All done with this request
+                        if (null != flux)
+                            flux.blockLast();
+                        if (rs.isFullyFetched())
+                            return null;
+                        else
+                            return rs.getExecutionInfo().getPagingState();
+                    }
+                }
+                else {
+                    long now = System.currentTimeMillis();
+                    long lastIteration = now - thispageStart;
+                    if ((now + lastIteration - alltimeStart) > (timeout * 1000) - bufferTime) {
+                        if (null != flux)
+                            flux.blockLast();
+                        if (rs.isFullyFetched())
+                            return null;
+                        else
+                            return rs.getExecutionInfo().getPagingState();
+                    }
+                    thispageStart = now;
                 }
             }
         }
