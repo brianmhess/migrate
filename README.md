@@ -18,7 +18,7 @@ gcloud builds submit --tag gcr.io/PROJECT-ID/migrate
 
 Deploy using
 ```
-gcloud beta run deploy SERVICE-NAME --image gcr.io/PROJECT-D/migrate --allow-unauthenticated --platform managed --project=PROJECT-ID
+gcloud beta run deploy SERVICE-NAME --image gcr.io/PROJECT-ID/migrate --allow-unauthenticated --platform managed --project=PROJECT-ID
 ```
 
 ### Removing

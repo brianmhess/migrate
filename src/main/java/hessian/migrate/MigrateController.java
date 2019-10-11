@@ -57,12 +57,13 @@ public class MigrateController {
         sb.append("<body>\n" +
                 "<hr>");
 
-        sb.append("  <h4>Migrate</h4>\n");
+        sb.append("  <h1>Migrate</h1>\n");
         sb.append("  <form action=\"/migrate\" method=\"post\" enctype=\"multipart/form-data\">\n");
 
-        sb.append("    <fieldset>\n");
+        sb.append("  <table>\n");
+        sb.append("    <tr><td><fieldset>\n");
         sb.append("    <legend>Source Cluster Information</legend>\n");
-        sb.append("    <table>\n");
+        sb.append("    <table bgcolor=\"#D5F5E3\" width=\"100%\">\n");
         sb.append("    <tr>\n");
         sb.append("      <td><label for=\"srcBundle\">Source Cloud Secure Connect Bundle:</label></td>");
         sb.append("      <td><input type=\"file\" id=\"srcBundle\" name=\"srcBundle\"" + ifNotEmpty(options.getSrcBundle()) + "></td>");
@@ -100,7 +101,7 @@ public class MigrateController {
         sb.append("      <td><input type=\"text\" id=\"srcPort\" name=\"srcPort\"" + ifNotNull(options.getSrcPort()) + "></td>");
         sb.append("    </tr>\n");
         sb.append("    <tr>\n");
-        sb.append("      <td><label for=\"srcDatacenter\">Source Data Center:</label></td>");
+        sb.append("      <td><label for=\"srcDatacenter\">Source Data Center  (<font style=\"font-family:courier;\">caas-dc</font> for Apollo):</label></td>");
         sb.append("      <td><input type=\"text\" id=\"srcDatacenter\" name=\"srcDatacenter\"" + ifNotNull(options.getSrcDatacenter()) + " required></td>");
         sb.append("    </tr>\n");
         sb.append("    <tr>\n");
@@ -112,11 +113,11 @@ public class MigrateController {
         sb.append("      <td><input type=\"text\" id=\"srcPassword\" name=\"srcPassword\"" + ifNotNull(options.getSrcPassword()) + "></td>");
         sb.append("    </tr>\n");
         sb.append("    </table>\n");
-        sb.append("    </fieldset>\n");
+        sb.append("    </fieldset></td></tr>\n");
 
-        sb.append("    <fieldset>\n");
+        sb.append("    <tr><td><fieldset>\n");
         sb.append("    <legend>Destination Cluster Information</legend>\n");
-        sb.append("    <table>\n");
+        sb.append("    <table bgcolor=\"#D6EAF8\" width=\"100%\">\n");
         sb.append("    <tr>\n");
         sb.append("      <td><label for=\"dstBundle\">Destination Cloud Secure Connect Bundle:</label></td>");
         sb.append("      <td><input type=\"file\" id=\"dstBundle\" name=\"dstBundle\"" + ifNotEmpty(options.getDstBundle()) + "></td>");
@@ -154,7 +155,7 @@ public class MigrateController {
         sb.append("      <td><input type=\"text\" id=\"dstPort\" name=\"dstPort\"" + ifNotNull(options.getDstPort()) + "></td>");
         sb.append("    </tr>\n");
         sb.append("    <tr>\n");
-        sb.append("      <td><label for=\"dstDatacenter\">Destination Data Center:</label></td>");
+        sb.append("      <td><label for=\"dstDatacenter\">Destination Data Center (<font style=\"font-family:courier;\">caas-dc</font> for Apollo):</label></td>");
         sb.append("      <td><input type=\"text\" id=\"dstDatacenter\" name=\"dstDatacenter\"" + ifNotNull(options.getDstDatacenter()) + " required></td>");
         sb.append("    </tr>\n");
         sb.append("    <tr>\n");
@@ -166,11 +167,11 @@ public class MigrateController {
         sb.append("      <td><input type=\"text\" id=\"dstPassword\" name=\"dstPassword\"" + ifNotNull(options.getDstPassword()) + "></td>");
         sb.append("    </tr>\n");
         sb.append("    </table>\n");
-        sb.append("    </fieldset>\n");
+        sb.append("    </fieldset></td></tr>\n");
 
-        sb.append("    <fieldset>\n");
-        sb.append("    <legend>Configuration</legend>\n");
-        sb.append("    <table>\n");
+        sb.append("    <tr><td><fieldset>\n");
+        sb.append("    <legend >Configuration</legend>\n");
+        sb.append("    <table bgcolor=\"#EBDEF0\" width=\"100%\">\n");
         sb.append("    <tr>\n");
         sb.append("      <td><label for=\"pageSize\">Number of rows/page:</label></td>");
         sb.append("      <td><input type=\"text\" id=\"pageSize\" name=\"pageSize\"" + ifNotNull(options.getPageSize()) + "></td>");
@@ -184,7 +185,8 @@ public class MigrateController {
         sb.append("      <td><input type=\"text\" id=\"pagingState\" name=\"pagingState\"" + ifNotNull(options.getPagingState()) + "></td>");
         sb.append("    </tr>\n");
         sb.append("    </table>\n");
-        sb.append("    </fieldset>\n");
+        sb.append("    </fieldset></td></tr>\n");
+        sb.append("   </table>\n");
 
         sb.append("    <div class=\"button\"><button type=\"submit\">Migrate It!</button></div>\n");
         sb.append("  </form>\n");
